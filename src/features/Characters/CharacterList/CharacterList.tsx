@@ -1,6 +1,7 @@
 import { StackNavigationProp } from '@react-navigation/stack';
-import React, { FC, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList } from 'react-native';
+import React, { FC, useCallback, useRef, useState } from 'react';
+import { ActivityIndicator, FlatList, TextInput } from 'react-native';
+import { debounce } from 'lodash';
 import CharacterCard from '../../../components/CharacterCard';
 import { useGetPaginatedCharactersQuery } from '../../../generated/graphql';
 import { Character } from '../../../utils/types';
@@ -9,30 +10,27 @@ type Props = {
   navigation: StackNavigationProp<any>;
 };
 const CharacterList: FC<Props> = ({ navigation }: Props) => {
-  const [page, setPage] = useState(1);
-  const [characters, setCharacters] = useState([]);
-  const { loading, fetchMore } = useGetPaginatedCharactersQuery({
+  const [page, setPage] = useState<number>(1);
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [searchCharacters, setSearchCharacters] = useState<Character[]>([]);
+  const [value, setValue] = useState<string>('');
+  const { loading, fetchMore, refetch } = useGetPaginatedCharactersQuery({
     variables: {
       page,
     },
     onCompleted: data => {
       if (data?.characters?.results?.length !== 0) {
-        const newArray = [...characters, ...data?.characters?.results];
-        if (newArray.length > characters.length && characters.length > 0) {
-          setTimeout(() => {
-            scrollRef.current?.scrollToIndex({
-              animated: true,
-              index:
-                Number(characters?.length) % 2 !== 0
-                  ? Math.floor(Number(characters?.length) / 2)
-                  : Math.floor(Number(characters?.length) / 2) - 1,
-            });
-          }, 500);
+        if (value) {
+          setSearchCharacters(data?.characters?.results);
+          return;
         }
+        const newArray = [...characters, ...data?.characters?.results];
+        setSearchCharacters([]);
         setCharacters(newArray);
       }
     },
     notifyOnNetworkStatusChange: true,
+    fetchPolicy: 'network-only',
   });
   const scrollRef = useRef(null);
   const handleCharacterClick = (id: string) => {
@@ -54,30 +52,60 @@ const CharacterList: FC<Props> = ({ navigation }: Props) => {
     setPage(prev => prev + 1);
   };
 
+  const handleSearch = useCallback(
+    debounce(async text => {
+      if (!text) {
+        setValue('');
+      } else {
+        await refetch({ filter: { name: text } });
+      }
+    }, 500),
+    [debounce]
+  );
+
+  const onSearch = (val: string) => {
+    setValue(val);
+    handleSearch(val);
+  };
+
   return loading ? (
     <ActivityIndicator size='large' />
   ) : (
-    <FlatList
-      data={characters}
-      ref={scrollRef}
-      renderItem={({ item }) => (
-        <CharacterCard
-          name={item?.name || ''}
-          image={item?.image}
-          species={item?.species}
-          id={item?.id}
-          handleCharacterClick={handleCharacterClick}
-        />
-      )}
-      keyExtractor={(item: Character) => item?.id?.toString()}
-      numColumns={2}
-      contentContainerStyle={{
-        marginTop: 10,
-      }}
-      columnWrapperStyle={{ justifyContent: 'space-evenly' }}
-      onEndReached={handleScrollEnd}
-      onEndReachedThreshold={0}
-    />
+    <>
+      <TextInput
+        value={value}
+        onChangeText={onSearch}
+        style={{
+          backgroundColor: 'white',
+          marginHorizontal: 30,
+          marginVertical: 10,
+          height: 40,
+          paddingHorizontal: 10,
+        }}
+        placeholder='Which character you wanna find here!!!'
+      />
+      <FlatList
+        data={!value ? characters : searchCharacters}
+        ref={scrollRef}
+        renderItem={({ item }) => (
+          <CharacterCard
+            name={item?.name || ''}
+            image={item?.image}
+            species={item?.species}
+            id={item?.id}
+            handleCharacterClick={handleCharacterClick}
+          />
+        )}
+        keyExtractor={(item: Character) => item?.id}
+        numColumns={2}
+        contentContainerStyle={{
+          marginTop: 10,
+        }}
+        columnWrapperStyle={{ justifyContent: 'space-evenly' }}
+        onEndReached={handleScrollEnd}
+        onEndReachedThreshold={0}
+      />
+    </>
   );
 };
 

@@ -210,6 +210,7 @@ export type GetCharacterDetailsQuery = { __typename?: 'Query', character?: { __t
 
 export type GetPaginatedCharactersQueryVariables = Exact<{
   page?: Maybe<Scalars['Int']>;
+  filter?: Maybe<FilterCharacter>;
 }>;
 
 
@@ -257,8 +258,8 @@ export type GetCharacterDetailsQueryHookResult = ReturnType<typeof useGetCharact
 export type GetCharacterDetailsLazyQueryHookResult = ReturnType<typeof useGetCharacterDetailsLazyQuery>;
 export type GetCharacterDetailsQueryResult = Apollo.QueryResult<GetCharacterDetailsQuery, GetCharacterDetailsQueryVariables>;
 export const GetPaginatedCharactersDocument = gql`
-    query GetPaginatedCharacters($page: Int) {
-  characters(page: $page) {
+    query GetPaginatedCharacters($page: Int, $filter: FilterCharacter) {
+  characters(page: $page, filter: $filter) {
     results {
       id
       name
@@ -282,6 +283,7 @@ export const GetPaginatedCharactersDocument = gql`
  * const { data, loading, error } = useGetPaginatedCharactersQuery({
  *   variables: {
  *      page: // value for 'page'
+ *      filter: // value for 'filter'
  *   },
  * });
  */
