@@ -1,6 +1,12 @@
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { FC, useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, TextInput } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  StyleSheet,
+  TextInput,
+} from 'react-native';
 import { debounce } from 'lodash';
 import CharacterCard from '../../../components/CharacterCard';
 import { useGetPaginatedCharactersQuery } from '../../../generated/graphql';
@@ -29,6 +35,11 @@ const CharacterList: FC<Props> = ({ navigation }: Props) => {
         setCharacters(newArray);
       }
     },
+    onError: err => {
+      Alert.alert('Something went wrong!', err.message, [
+        { text: 'OK', onPress: () => setValue('') },
+      ]);
+    },
     notifyOnNetworkStatusChange: true,
     fetchPolicy: 'network-only',
   });
@@ -43,11 +54,10 @@ const CharacterList: FC<Props> = ({ navigation }: Props) => {
     });
     setTimeout(() => {
       navigation.navigate('Character', { id });
-    }, 500);
+    }, 800);
   };
 
   const handleScrollEnd = () => {
-    // refetch({ page: page + 1 });
     fetchMore({ variables: { page: page + 1 } });
     setPage(prev => prev + 1);
   };
@@ -75,13 +85,7 @@ const CharacterList: FC<Props> = ({ navigation }: Props) => {
       <TextInput
         value={value}
         onChangeText={onSearch}
-        style={{
-          backgroundColor: 'white',
-          marginHorizontal: 30,
-          marginVertical: 10,
-          height: 40,
-          paddingHorizontal: 10,
-        }}
+        style={styles.input}
         placeholder='Which character you wanna find here!!!'
       />
       <FlatList
@@ -110,3 +114,13 @@ const CharacterList: FC<Props> = ({ navigation }: Props) => {
 };
 
 export default CharacterList;
+
+const styles = StyleSheet.create({
+  input: {
+    backgroundColor: 'white',
+    marginHorizontal: 30,
+    marginVertical: 10,
+    height: 40,
+    paddingHorizontal: 10,
+  },
+});

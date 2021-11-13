@@ -22,40 +22,24 @@ const CharacterDetails: FC<Props> = ({ navigation, route }: Props) => {
     },
   });
   return character.loading ? (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+    <View style={styles.flexCenter}>
       <ActivityIndicator size='large' />
     </View>
   ) : (
-    <ScrollView contentContainerStyle={{ alignItems: 'center', marginTop: 20 }}>
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
       <Image
         source={{ uri: character?.data?.character?.image }}
         style={{ height: 300, width: '80%' }}
       />
-      <Text style={{ fontWeight: '700', fontSize: 30, marginTop: 10 }}>
+      <Text style={styles.characterName}>
         {character?.data?.character?.name}
       </Text>
-      <Text style={{ fontSize: 15, fontWeight: '700', marginVertical: 20 }}>
+      <Text style={styles.episodeHeader}>
         Episodes in which {character?.data?.character?.name} appeared
       </Text>
       {character?.data?.character?.episode?.map((episodeData, idx) => (
-        <View
-          key={idx}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            alignSelf: 'flex-start',
-            marginLeft: 20,
-            marginBottom: 20,
-          }}>
-          <View
-            style={{
-              borderRadius: 50,
-              height: 10,
-              width: 10,
-              backgroundColor: 'black',
-              marginRight: 10,
-            }}
-          />
+        <View key={idx} style={styles.episodeDetails}>
+          <View style={styles.dot} />
           <Text>
             {episodeData?.name} ( {episodeData?.episode} )
           </Text>
@@ -68,17 +52,26 @@ const CharacterDetails: FC<Props> = ({ navigation, route }: Props) => {
 export default CharacterDetails;
 
 const styles = StyleSheet.create({
-  card: {
-    // height: 30,
-    backgroundColor: 'white',
-    // borderWidth: 1,
-    // alignItems: 'center',
-    marginBottom: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    justifyContent: 'center',
+  episodeDetails: {
+    flexDirection: 'row',
     alignItems: 'center',
-    width: '40%',
-    borderRadius: 10,
+    alignSelf: 'flex-start',
+    marginLeft: 20,
+    marginBottom: 20,
+  },
+  flexCenter: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scrollContainer: { alignItems: 'center', marginTop: 20 },
+  characterName: { fontWeight: '700', fontSize: 30, marginTop: 10 },
+  episodeHeader: { fontSize: 15, fontWeight: '700', marginVertical: 20 },
+  dot: {
+    borderRadius: 50,
+    height: 10,
+    width: 10,
+    backgroundColor: 'black',
+    marginRight: 10,
   },
 });
