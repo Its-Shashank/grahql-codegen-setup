@@ -1,5 +1,11 @@
 import React, { FC } from 'react';
-import { StyleSheet, View, Text, ActivityIndicator } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  ActivityIndicator,
+  ScrollView,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useGetCharacterDetailsQuery } from '../../../generated/graphql';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -20,9 +26,9 @@ const CharacterDetails: FC<Props> = ({ navigation, route }: Props) => {
       <ActivityIndicator size='large' />
     </View>
   ) : (
-    <View>
+    <ScrollView contentContainerStyle={{ alignItems: 'center' }}>
       <Text>{character?.data?.character?.name}</Text>
-    </View>
+    </ScrollView>
   );
 };
 

@@ -13,14 +13,14 @@ type Props = {
   name: string;
   species: string;
   image: ImageSourcePropType;
+  handleCharacterClick: (id: string) => void;
 };
 const CharacterDetails: FC<Props> = (props: Props) => {
   const navigation = useNavigation();
-  const handleCharacterClick = () => {
-    navigation.navigate('Character', { id: props.id });
-  };
   return (
-    <TouchableOpacity onPress={handleCharacterClick} style={styles.card}>
+    <TouchableOpacity
+      onPress={() => props.handleCharacterClick(props.id)}
+      style={styles.card}>
       <Image
         source={{ uri: props.image }}
         style={{ height: 100, width: 100 }}
