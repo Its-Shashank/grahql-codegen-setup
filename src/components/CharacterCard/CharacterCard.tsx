@@ -6,7 +6,6 @@ import {
   Image,
   ImageSourcePropType,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 
 type Props = {
   id: string;
@@ -16,7 +15,6 @@ type Props = {
   handleCharacterClick: (id: string) => void;
 };
 const CharacterDetails: FC<Props> = (props: Props) => {
-  const navigation = useNavigation();
   return (
     <TouchableOpacity
       onPress={() => props.handleCharacterClick(props.id)}

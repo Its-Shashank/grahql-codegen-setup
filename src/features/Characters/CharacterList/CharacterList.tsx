@@ -25,7 +25,10 @@ const CharacterList: FC<Props> = ({ navigation }: Props) => {
   const handleCharacterClick = (id: string) => {
     scrollRef.current?.scrollToIndex({
       animated: true,
-      index: Math.floor(Number(id) / 2),
+      index:
+        Number(id) % 2 !== 0
+          ? Math.floor(Number(id) / 2)
+          : Math.floor(Number(id) / 2) - 1,
     });
     setTimeout(() => {
       navigation.navigate('Character', { id });
