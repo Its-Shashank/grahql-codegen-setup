@@ -1,13 +1,6 @@
 import { StackNavigationProp } from '@react-navigation/stack';
-import React, { FC, useRef } from 'react';
-import {
-  View,
-  Text,
-  ActivityIndicator,
-  ScrollView,
-  FlatList,
-  FlatListProps,
-} from 'react-native';
+import React, { FC, useRef, useState } from 'react';
+import { ActivityIndicator, FlatList } from 'react-native';
 import CharacterCard from '../../../components/CharacterCard';
 import { useGetPaginatedCharactersQuery } from '../../../generated/graphql';
 import { Character } from '../../../utils/types';
@@ -16,10 +9,30 @@ type Props = {
   navigation: StackNavigationProp<any>;
 };
 const CharacterList: FC<Props> = ({ navigation }: Props) => {
-  const characters = useGetPaginatedCharactersQuery({
+  const [page, setPage] = useState(1);
+  const [characters, setCharacters] = useState([]);
+  const { loading, fetchMore } = useGetPaginatedCharactersQuery({
     variables: {
-      page: 1,
+      page,
     },
+    onCompleted: data => {
+      if (data?.characters?.results?.length !== 0) {
+        const newArray = [...characters, ...data?.characters?.results];
+        if (newArray.length > characters.length && characters.length > 0) {
+          setTimeout(() => {
+            scrollRef.current?.scrollToIndex({
+              animated: true,
+              index:
+                Number(characters?.length) % 2 !== 0
+                  ? Math.floor(Number(characters?.length) / 2)
+                  : Math.floor(Number(characters?.length) / 2) - 1,
+            });
+          }, 500);
+        }
+        setCharacters(newArray);
+      }
+    },
+    notifyOnNetworkStatusChange: true,
   });
   const scrollRef = useRef(null);
   const handleCharacterClick = (id: string) => {
@@ -34,12 +47,18 @@ const CharacterList: FC<Props> = ({ navigation }: Props) => {
       navigation.navigate('Character', { id });
     }, 500);
   };
-  // console.log({ characters: characters.data?.characters });
-  return characters.loading ? (
+
+  const handleScrollEnd = () => {
+    // refetch({ page: page + 1 });
+    fetchMore({ variables: { page: page + 1 } });
+    setPage(prev => prev + 1);
+  };
+
+  return loading ? (
     <ActivityIndicator size='large' />
   ) : (
     <FlatList
-      data={characters?.data?.characters?.results}
+      data={characters}
       ref={scrollRef}
       renderItem={({ item }) => (
         <CharacterCard
@@ -53,20 +72,13 @@ const CharacterList: FC<Props> = ({ navigation }: Props) => {
       keyExtractor={(item: Character) => item?.id?.toString()}
       numColumns={2}
       contentContainerStyle={{
-        // justifyContent: 'space-between',
         marginTop: 10,
-        // backgroundColor: 'red',
       }}
       columnWrapperStyle={{ justifyContent: 'space-evenly' }}
+      onEndReached={handleScrollEnd}
+      onEndReachedThreshold={0}
     />
   );
 };
-{
-  /* {characters.data?.characters?.results?.map((char, idx) => (
-        <CharacterDetails name={char?.name || ''} key={idx} />
-      ))}
-      {characters?.data?.characters?.results?.length === 0 && (
-        <Text>No characters found!!</Text>
-      )} */
-}
+
 export default CharacterList;
