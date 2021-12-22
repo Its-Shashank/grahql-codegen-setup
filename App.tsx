@@ -30,10 +30,6 @@ export default function App() {
           <AppStack />
         </NavigationContainer>
       </SafeAreaView>
-      {/* <View style={styles.container}>
-      <StatusBar style="auto" />
-      <CharacterList />
-    </View> */}
     </ApolloProvider>
   );
 }
